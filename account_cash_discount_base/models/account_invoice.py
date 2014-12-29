@@ -36,36 +36,34 @@ class account_invoice(models.Model):
     @api.one
     @api.onchange('discount_percent')
     def change_discount_percent(self):
-        self.discount_amount = self._compute_discount_amount(self)
+        self.discount_amount = self._compute_discount_amount()
         return
 
     @api.one
     @api.onchange('amount_untaxed')
     def change_untaxed_amount(self):
-        self.discount_amount = self._compute_discount_amount(self)
+        self.discount_amount = self._compute_discount_amount()
         return
 
     @api.v8
-    def _compute_discount_amount(self, invoice):
-        discount = invoice.amount_untaxed * (0.0 + invoice
-                                             .discount_percent/100)
-        return (invoice.amount_total - discount)
+    def _compute_discount_amount(self):
+        discount = self.amount_untaxed * (0.0 + self.discount_percent/100)
+        return (self.amount_total - discount)
 
     @api.v8
-    def _compute_discount_due_date(self, date_invoice, discount_delay):
-        if date_invoice:
-            date_invoice = datetime.strptime(date_invoice,
+    def _compute_discount_due_date(self):
+        if self.date_invoice:
+            date_invoice = datetime.strptime(self.date_invoice,
                                              DEFAULT_SERVER_DATE_FORMAT)
         else:
             date_invoice = datetime.now()
-        due_date = date_invoice + timedelta(days=discount_delay)
+        due_date = date_invoice + timedelta(days=self.discount_delay)
         discount_due_date = due_date.date()
         return discount_due_date
 
     @api.one
     @api.onchange('discount_delay')
     def discount_delay_change(self):
-        discount_due_date = self\
-            ._compute_discount_due_date(self.date_invoice, self.discount_delay)
+        discount_due_date = self._compute_discount_due_date()
         self.discount_due_date = discount_due_date
         return
