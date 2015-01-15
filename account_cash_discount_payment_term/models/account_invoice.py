@@ -31,5 +31,3 @@ class account_invoice(models.Model):
     def change_payment_term_discount(self):
         self.discount_percent = self.payment_term.discount_percent
         self.discount_delay = self.payment_term.discount_delay
-        self.discount_amount = self._compute_discount_amount()
-        return

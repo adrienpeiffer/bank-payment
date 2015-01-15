@@ -20,7 +20,7 @@
 #
 ##############################################################################
 
-from openerp import models, fields, api
+from openerp import models, fields, api, exceptions, _
 from datetime import datetime, timedelta
 from openerp.tools import DEFAULT_SERVER_DATE_FORMAT
 
@@ -28,22 +28,18 @@ from openerp.tools import DEFAULT_SERVER_DATE_FORMAT
 class account_invoice(models.Model):
     _inherit = 'account.invoice'
 
-    discount_percent = fields.Float(string='Discount Percent')
-    discount_amount = fields.Float(string='Amount Discount included')
-    discount_delay = fields.Integer(string='Discount Delay (days)')
-    discount_due_date = fields.Date(string='Discount Due Date')
-
-    @api.one
-    @api.onchange('discount_percent')
-    def change_discount_percent(self):
-        self.discount_amount = self._compute_discount_amount()
-        return
-
-    @api.one
-    @api.onchange('amount_untaxed')
-    def change_untaxed_amount(self):
-        self.discount_amount = self._compute_discount_amount()
-        return
+    discount_percent = fields.Float(string='Discount Percent',
+                                    readonly=True,
+                                    states={'draft': [('readonly', False)]})
+    discount_amount = fields.Float(string='Amount Discount included',
+                                   readonly=True,
+                                   states={'draft': [('readonly', False)]})
+    discount_delay = fields.Integer(string='Discount Delay (days)',
+                                    readonly=True,
+                                    states={'draft': [('readonly', False)]})
+    discount_due_date = fields.Date(string='Discount Due Date',
+                                    readonly=True,
+                                    states={'draft': [('readonly', False)]})
 
     @api.v8
     def _compute_discount_amount(self):
@@ -61,9 +57,39 @@ class account_invoice(models.Model):
         discount_due_date = due_date.date()
         return discount_due_date
 
-    @api.one
-    @api.onchange('discount_delay')
-    def discount_delay_change(self):
-        discount_due_date = self._compute_discount_due_date()
-        self.discount_due_date = discount_due_date
-        return
+    @api.v8
+    def compute_discount_amount(self):
+        if (self.type in ['in_invoice', 'out_invoice'] and
+                self.discount_percent != 0.0):
+            self.discount_amount = self._compute_discount_amount()
+
+    @api.v8
+    def compute_discount_due_date(self):
+        if self.discount_delay != 0 and (self.type != 'in_invoice' or
+                                         self.discount_delay != 0):
+            self.discount_due_date = self._compute_discount_due_date()
+
+    @api.multi
+    def button_reset_taxes(self):
+        res = super(account_invoice, self).button_reset_taxes()
+        for invoice in self:
+            invoice.compute_discount_amount()
+        return res
+
+    @api.multi
+    def action_move_create(self):
+        super(account_invoice, self).action_move_create()
+        for inv in self:
+            inv.compute_discount_amount()
+            if not inv.discount_due_date and \
+                    inv.discount_amount and inv.discount_amount != 0.0:
+                raise exceptions.Warning(_('Warning !\n You have to define '
+                                           'a discount due date'))
+        return True
+
+    @api.multi
+    def action_date_assign(self):
+        super(account_invoice, self).action_date_assign()
+        for inv in self:
+            inv.compute_discount_due_date()
+        return True
