@@ -22,8 +22,8 @@ msgstr "% d'escompte pour un paiement avant le"
 
 #. module: account_cash_discount_base
 #: field:account.invoice,discount_amount:0
-msgid "Amount Discount included"
-msgstr "Montant total escompte inclus"
+msgid "Amount Discount deducted"
+msgstr "Montant total escompte déduit"
 
 #. module: account_cash_discount_base
 #: field:payment.order.create,cash_discount_date:0

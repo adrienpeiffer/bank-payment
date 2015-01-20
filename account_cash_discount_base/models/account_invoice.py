@@ -31,7 +31,7 @@ class account_invoice(models.Model):
     discount_percent = fields.Float(string='Discount Percent',
                                     readonly=True,
                                     states={'draft': [('readonly', False)]})
-    discount_amount = fields.Float(string='Amount Discount included',
+    discount_amount = fields.Float(string='Amount Discount deducted',
                                    readonly=True,
                                    states={'draft': [('readonly', False)]})
     discount_delay = fields.Integer(string='Discount Delay (days)',
