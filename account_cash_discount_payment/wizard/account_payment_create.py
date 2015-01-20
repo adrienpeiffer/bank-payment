@@ -21,7 +21,6 @@
 ##############################################################################
 
 from openerp import models, api, fields
-from openerp.tools.translate import _
 from datetime import datetime
 from openerp.tools import DEFAULT_SERVER_DATE_FORMAT
 
@@ -50,34 +49,21 @@ class PaymentOrderCreate(models.TransientModel):
         return res
 
     @api.multi
-    def search_entries(self):
-        if not self.cash_discount_date:
-            return super(PaymentOrderCreate, self).search_entries()
-        line_obj = self.env['account.move.line']
-        model_data_obj = self.env['ir.model.data']
-        # -- start account_banking_payment --
-        payment = self.env['payment.order'].browse(
-            self.env.context['active_id'])
-        # Search for move line to pay:
-        domain = [('move_id.state', '=', 'posted'),
-                  ('reconcile_id', '=', False),
-                  ('company_id', '=', payment.mode.company_id.id)]
-        self.extend_payment_order_domain(payment, domain)
-        # -- end account_direct_debit --
-        domain += [('invoice.discount_due_date', '<=', self.duedate)]
-        lines = line_obj.search(domain)
-        context = self.env.context.copy()
-        context['line_ids'] = lines.ids
-        context['populate_results'] = self.populate_results
-        model_datas = model_data_obj.search(
-            [('model', '=', 'ir.ui.view'),
-             ('name', '=', 'view_create_payment_order_lines')])
-        return {'name': _('Entry Lines'),
-                'context': context,
-                'view_type': 'form',
-                'view_mode': 'form',
-                'res_model': 'payment.order.create',
-                'views': [(model_datas[0].res_id, 'form')],
-                'type': 'ir.actions.act_window',
-                'target': 'new',
-                }
+    def extend_payment_order_domain(self, payment_order, domain):
+        # TODO : Improvement to remove partial domain (while loop)
+        self.ensure_one()
+        super(PaymentOrderCreate, self)\
+            .extend_payment_order_domain(payment_order, domain)
+        if self.cash_discount_date:
+            pos = 0
+            while pos < len(domain):
+                if pos < len(domain)-2 and domain[pos] == '|' and \
+                        domain[pos+1] == ('date_maturity', '<=', self.duedate) \
+                        and domain[pos+2] == ('date_maturity', '=', False):
+                    domain.pop(pos)
+                    domain.pop(pos)
+                    domain.pop(pos)
+                    break
+                pos += 1
+            domain += [('invoice.discount_due_date', '<=', self.duedate)]
+        return True
