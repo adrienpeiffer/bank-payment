@@ -44,7 +44,8 @@ class PaymentOrderCreate(models.TransientModel):
                 if invoice.discount_due_date >= today:
                     discount = invoice.amount_total - \
                         invoice.discount_amount
-                    res.update({'amount_currency': invoice.discount_amount,
+                    amount_discount = line.amount_residual - discount
+                    res.update({'amount_currency': amount_discount,
                                 'discount_amount': discount})
         return res
 
