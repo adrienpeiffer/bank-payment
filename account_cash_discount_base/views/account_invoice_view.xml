@@ -7,7 +7,7 @@
             <field name="inherit_id" ref="account.invoice_supplier_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='payment_ids']" position="before">
-                    <group name="discount" string="Cash discount">
+                    <group name="discount" string="Cash discount" attrs="{'invisible': [('type', '!=', 'in_invoice')]}">
                         <field name="discount_delay" />
                         <field name="discount_due_date" attrs="{'readonly': ['|', ('discount_delay', '!=', 0), ('state', '!=', 'draft')]}"/>
                         <label for="discount_percent"/>
@@ -27,7 +27,7 @@
             <field name="inherit_id" ref="account.invoice_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='payment_ids']" position="before">
-                    <group name="discount" string="Cash discount">
+                    <group name="discount" string="Cash discount" attrs="{'invisible': [('type', '!=', 'out_invoice')]}">
                         <field name="discount_delay" />
                         <field name="discount_due_date" readonly="1"/>
                         <label for="discount_percent"/>
