@@ -21,8 +21,6 @@
 ##############################################################################
 
 from openerp import models, api, fields
-from datetime import datetime
-from openerp.tools import DEFAULT_SERVER_DATE_FORMAT
 
 
 class PaymentOrderCreate(models.TransientModel):
