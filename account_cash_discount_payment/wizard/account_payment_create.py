@@ -38,7 +38,7 @@ class PaymentOrderCreate(models.TransientModel):
         res.update({'base_amount': res['amount_currency']})
         if res['move_line_id']:
             move_line = move_line_obj.browse([res['move_line_id']])
-            today = datetime.now().strftime(DEFAULT_SERVER_DATE_FORMAT)
+            today = fields.Date.today()
             if move_line.invoice and move_line.invoice.discount_due_date:
                 invoice = move_line.invoice
                 if invoice.discount_due_date >= today:
