@@ -22,7 +22,6 @@
 
 import openerp.tests.common as common
 from openerp import workflow, fields
-from datetime import datetime
 
 
 def create_simple_invoice(self, date):
@@ -69,10 +68,11 @@ class TestAccountCashDiscountBase(common.TransactionCase):
             {'duedate': date,
              'cash_discount_date': True,
              'populate_results': True})
-        self.context.update({'active_id': account_payment_id})
-        res = payment_order_create.with_context(self.context).search_entries()
+        ctx = self.context.copy()
+        ctx.update({'active_id': account_payment_id})
+        res = payment_order_create.with_context(ctx).search_entries()
         payment_order_create.entries = res['context']['line_ids']
-        payment_order_create.with_context(self.context).create_payment()
+        payment_order_create.with_context(ctx).create_payment()
         account_payment = self.env['payment.order']\
             .browse([account_payment_id])
         self.assertEqual(len(account_payment.line_ids.ids), 1,
