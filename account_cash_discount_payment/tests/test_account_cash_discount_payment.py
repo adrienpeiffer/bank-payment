@@ -25,9 +25,6 @@ from openerp import workflow
 from datetime import datetime
 from openerp.tools import DEFAULT_SERVER_DATE_FORMAT
 
-DB = common.DB
-ADMIN_USER_ID = common.ADMIN_USER_ID
-
 
 def create_simple_invoice(self, date):
     journal_id = self.ref('account.sales_journal')
