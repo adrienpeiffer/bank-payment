@@ -49,22 +49,31 @@ class PaymentOrderCreate(models.TransientModel):
                                 'discount_amount': discount})
         return res
 
-    @api.multi
+    @api.model
     def extend_payment_order_domain(self, payment_order, domain):
         # TODO : Improvement to remove partial domain (while loop)
-        self.ensure_one()
         super(PaymentOrderCreate, self)\
             .extend_payment_order_domain(payment_order, domain)
-        if self.cash_discount_date:
-            pos = 0
-            while pos < len(domain):
-                if pos < len(domain)-2 and domain[pos] == '|' and \
-                        domain[pos+1] == ('date_maturity', '<=', self.duedate) \
-                        and domain[pos+2] == ('date_maturity', '=', False):
-                    domain.pop(pos)
-                    domain.pop(pos)
-                    domain.pop(pos)
-                    break
-                pos += 1
-            domain += [('invoice.discount_due_date', '<=', self.duedate)]
+        if self.env.context.get('cash_discount_date', False):
+            if self.cash_discount_date:
+                pos = 0
+                while pos < len(domain):
+                    if pos < len(domain)-2 and domain[pos] == '|' and \
+                            domain[pos+1] == ('date_maturity', '<=',
+                                              self.duedate) \
+                            and domain[pos+2] == ('date_maturity', '=', False):
+                        domain.pop(pos)
+                        domain.pop(pos)
+                        domain.pop(pos)
+                        break
+                    pos += 1
+                domain += [('invoice.discount_due_date', '<=', self.duedate)]
         return True
+
+    @api.multi
+    def search_entries(self):
+        ctx = self.env.context.copy()
+        if self.cash_discount_date:
+            ctx.update({'cash_discount_date': True})
+            self.env.context = ctx
+        return super(PaymentOrderCreate, self).search_entries()
