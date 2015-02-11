@@ -57,13 +57,13 @@ class account_invoice(models.Model):
         discount_due_date = due_date.date()
         return discount_due_date
 
-    @api.v8
+    @api.one
     def compute_discount_amount(self):
         if (self.type in ['in_invoice', 'out_invoice'] and
                 self.discount_percent != 0.0):
             self.discount_amount = self._compute_discount_amount()
 
-    @api.v8
+    @api.one
     def compute_discount_due_date(self):
         if self.discount_delay != 0 and (self.type != 'in_invoice' or
                                          self.discount_delay != 0):
@@ -72,8 +72,7 @@ class account_invoice(models.Model):
     @api.multi
     def button_reset_taxes(self):
         res = super(account_invoice, self).button_reset_taxes()
-        for invoice in self:
-            invoice.compute_discount_amount()
+        self.compute_discount_amount()
         return res
 
     @api.multi
@@ -90,6 +89,5 @@ class account_invoice(models.Model):
     @api.multi
     def action_date_assign(self):
         super(account_invoice, self).action_date_assign()
-        for inv in self:
-            inv.compute_discount_due_date()
+        self.compute_discount_due_date()
         return True
