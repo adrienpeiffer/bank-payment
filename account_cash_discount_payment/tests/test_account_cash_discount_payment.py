@@ -21,9 +21,8 @@
 ##############################################################################
 
 import openerp.tests.common as common
-from openerp import workflow
+from openerp import workflow, fields
 from datetime import datetime
-from openerp.tools import DEFAULT_SERVER_DATE_FORMAT
 
 
 def create_simple_invoice(self, date):
@@ -60,8 +59,7 @@ class TestAccountCashDiscountBase(common.TransactionCase):
                                                               self.uid)
 
     def test_invoice_payment_discount(self):
-        today = datetime.now()
-        date = today.strftime(DEFAULT_SERVER_DATE_FORMAT)
+        date = fields.Date.today()
         invoice = create_simple_invoice(self, date)
         workflow.trg_validate(self.uid, 'account.invoice', invoice.id,
                               'invoice_open', self.cr)
