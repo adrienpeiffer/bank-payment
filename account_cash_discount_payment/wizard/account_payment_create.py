@@ -53,19 +53,18 @@ class PaymentOrderCreate(models.TransientModel):
         super(PaymentOrderCreate, self)\
             .extend_payment_order_domain(payment_order, domain)
         if self.env.context.get('cash_discount_date', False):
-            if self.cash_discount_date:
-                pos = 0
-                while pos < len(domain):
-                    if pos < len(domain)-2 and domain[pos] == '|' and \
-                            domain[pos+1] == ('date_maturity', '<=',
-                                              self.duedate) \
-                            and domain[pos+2] == ('date_maturity', '=', False):
-                        domain.pop(pos)
-                        domain.pop(pos)
-                        domain.pop(pos)
-                        break
-                    pos += 1
-                domain += [('invoice.discount_due_date', '<=', self.duedate)]
+            pos = 0
+            while pos < len(domain):
+                if pos < len(domain)-2 and domain[pos] == '|' and \
+                        domain[pos+1] == ('date_maturity', '<=',
+                                          self.duedate) \
+                        and domain[pos+2] == ('date_maturity', '=', False):
+                    domain.pop(pos)
+                    domain.pop(pos)
+                    domain.pop(pos)
+                    break
+                pos += 1
+            domain += [('invoice.discount_due_date', '<=', self.duedate)]
         return True
 
     @api.multi
