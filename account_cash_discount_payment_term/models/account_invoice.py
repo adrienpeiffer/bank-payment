@@ -29,5 +29,6 @@ class account_invoice(models.Model):
     @api.one
     @api.onchange('payment_term')
     def change_payment_term_discount(self):
-        self.discount_percent = self.payment_term.discount_percent
-        self.discount_delay = self.payment_term.discount_delay
+        if self.type in ['in_invoice', 'out_invoice']:
+            self.discount_percent = self.payment_term.discount_percent
+            self.discount_delay = self.payment_term.discount_delay
