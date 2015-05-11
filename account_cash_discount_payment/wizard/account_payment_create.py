@@ -50,11 +50,12 @@ class PaymentOrderCreate(models.TransientModel):
     @api.model
     def extend_payment_order_domain(self, payment_order, domain):
         # TODO : Improvement to remove partial domain (while loop)
+        context = self.env.context
         super(PaymentOrderCreate, self)\
             .extend_payment_order_domain(payment_order, domain)
-        if self.env.context.get('cash_discount_date', False) and \
-                self.env.context.get('due_date', False):
-            due_date = self.env.context.get('due_date', False)
+        if context.get('cash_discount_date', False) and \
+                context.get('due_date', False):
+            due_date = context.get('due_date', False)
             pos = 0
             while pos < len(domain):
                 if pos < len(domain)-2 and domain[pos] == '|' and \
@@ -75,5 +76,7 @@ class PaymentOrderCreate(models.TransientModel):
         if self.cash_discount_date:
             ctx.update({'cash_discount_date': True,
                         'due_date': self.duedate})
-            self.env.context = ctx
-        return super(PaymentOrderCreate, self).search_entries()
+        else:
+            ctx.update({'cash_discount_date': False})
+        return super(PaymentOrderCreate, self.with_context(ctx))\
+            .search_entries()
