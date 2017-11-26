@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="invoice_supplier_form_inherit" model="ir.ui.view">
+            <field name="name">account.invoice.supplier.form (account_cash_discount_base)</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_supplier_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='payment_ids']" position="before">
+                    <group name="discount" string="Cash discount" attrs="{'invisible': [('type', '!=', 'in_invoice')]}">
+                        <field name="discount_delay" />
+                        <field name="discount_due_date" attrs="{'readonly': ['|', ('discount_delay', '!=', 0), ('state', '!=', 'draft')]}"/>
+                        <label for="discount_percent"/>
+                        <div>
+                            <field name="discount_percent" class="oe_inline"/>
+                            <button name="button_reset_taxes" states="draft,proforma2" string="(update)" class="oe_link oe_edit_only" type="object" help="Recompute taxes and total"/>
+                        </div>
+                        <field name="discount_amount" attrs="{'readonly': ['|', ('discount_percent', '!=', 0.0), ('state', '!=', 'draft')]}"/>
+                    </group>
+                    <group name="payments" string="Payments"></group>
+                </xpath>
+            </field>
+        </record>
+        <record id="invoice_form_inherit" model="ir.ui.view">
+            <field name="name">account.invoice.form (account_cash_discount_base)</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='payment_ids']" position="before">
+                    <group name="discount" string="Cash discount" attrs="{'invisible': [('type', '!=', 'out_invoice')]}">
+                        <field name="discount_delay" />
+                        <field name="discount_due_date" readonly="1"/>
+                        <label for="discount_percent"/>
+                        <div>
+                            <field name="discount_percent" class="oe_inline"/>
+                            <button name="button_reset_taxes" states="draft,proforma2" string="(update)" class="oe_link oe_edit_only" type="object" help="Recompute taxes and total"/>
+                        </div>
+                        <field name="discount_amount" readonly="1"/>
+                    </group>
+                    <group name="payments" string="Payments"></group>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</openerp>
